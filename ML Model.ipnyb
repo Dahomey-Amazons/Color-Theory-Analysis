@@ -1,0 +1,44 @@
+import pandas as pd
+from sklearn.cluster import KMeans
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+
+# Load your dataset
+dataset = pd.read_csv('dummy_data_colour_analysis.csv')
+
+# Preprocess data (extract RGB values, prepare features and target)
+X = dataset[['hair_color_R', 'hair_color_G', 'hair_color_B',
+             'skin_color_R', 'skin_color_G', 'skin_color_B',
+             'eye_color_R', 'eye_color_G', 'eye_color_B']].values
+y = dataset['recommended_palette'].values
+
+# Step 1: Color Clustering using K-Means
+n_clusters = 5  # Adjust based on your dataset
+kmeans_hair = KMeans(n_clusters=n_clusters, random_state=42).fit(X[:, 0:3])
+kmeans_skin = KMeans(n_clusters=n_clusters, random_state=42).fit(X[:, 3:6])
+kmeans_eye = KMeans(n_clusters=n_clusters, random_state=42).fit(X[:, 6:9])
+
+# Assign cluster labels to dataset
+dataset['hair_color_cluster'] = kmeans_hair.labels_
+dataset['skin_color_cluster'] = kmeans_skin.labels_
+dataset['eye_color_cluster'] = kmeans_eye.labels_
+
+# Step 2: Preference Prediction using Random Forest Classifier
+X_clustering = dataset[['hair_color_cluster', 'skin_color_cluster', 'eye_color_cluster']].values
+X_train, X_test, y_train, y_test = train_test_split(X_clustering, y, test_size=0.2, random_state=42)
+
+rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
+rf_model.fit(X_train, y_train)
+
+# Predict on test set
+y_pred = rf_model.predict(X_test)
+
+# Evaluate model performance
+accuracy = accuracy_score(y_test, y_pred)
+print(f'Random Forest Accuracy: {accuracy:.2f}')
+
+# Example prediction for a new data point
+new_data_point = [[2, 1, 3]]  # Example cluster labels 
+predicted_palette = rf_model.predict(new_data_point)
+print(f'Predicted Palette: {predicted_palette}')
