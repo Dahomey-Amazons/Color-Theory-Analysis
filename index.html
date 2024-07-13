@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Analysis by Myntra</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="phone-container">
+        <div class="phone-screen">
+            <h1>Color Analysis by Myntra</h1>
+            
+            <label for="imageUpload" class="upload-btn">Upload Image</label>
+            <input type="file" id="imageUpload" accept="image/*">
+            
+            <div class="canvas-container">
+                <canvas id="imageCanvas"></canvas>
+            </div>
+            
+            <div class="button-container">
+                <button id="extractHair">Select Hair Color</button>
+                <button id="extractSkin">Select Skin Color</button>
+                <button id="extractEye">Select Eye Color</button>
+            </div>
+            
+            <div id="extractedColors">
+                <h2>Extracted Colors:</h2>
+                <div class="color-boxes">
+                    <div id="hairColor" class="color-box"></div>
+                    <div id="skinColor" class="color-box"></div>
+                    <div id="eyeColor" class="color-box"></div>
+                </div>
+            </div>
+            
+            <div id="recommendedPalette">
+                <h2>Recommended Color Palette:</h2>
+                <div class="color-boxes">
+                    <!-- Recommended colors will be added here -->
+                </div>
+            </div>
+
+            <div id="recommendedProducts">
+                <button id="showRecommendedProducts">Show Recommended Products</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const imageUpload = document.getElementById('imageUpload');
+        const imageCanvas = document.getElementById('imageCanvas');
+        const ctx = imageCanvas.getContext('2d');
+        const extractHair = document.getElementById('extractHair');
+        const extractSkin = document.getElementById('extractSkin');
+        const extractEye = document.getElementById('extractEye');
+        const hairColorBox = document.getElementById('hairColor');
+        const skinColorBox = document.getElementById('skinColor');
+        const eyeColorBox = document.getElementById('eyeColor');
+        const recommendedPalette = document.getElementById('recommendedPalette');
+
+        let currentMode = '';
+
+        imageUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const maxWidth = 300;
+                    const maxHeight = 300;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height *= maxWidth / width;
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width *= maxHeight / height;
+                            height = maxHeight;
+                        }
+                    }
+
+                    imageCanvas.width = width;
+                    imageCanvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                }
+                img.src = event.target.result;
+            }
+            
+            reader.readAsDataURL(file);
+        });
+
+        function extractColor(e) {
+            const rect = imageCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const imageData = ctx.getImageData(x, y, 1, 1);
+            const [r, g, b] = imageData.data;
+            return `rgb(${r},${g},${b})`;
+        }
+
+        imageCanvas.addEventListener('click', function(e) {
+            if (currentMode) {
+                const color = extractColor(e);
+                switch(currentMode) {
+                    case 'hair':
+                        hairColorBox.style.backgroundColor = color;
+                        break;
+                    case 'skin':
+                        skinColorBox.style.backgroundColor = color;
+                        break;
+                    case 'eye':
+                        eyeColorBox.style.backgroundColor = color;
+                        generateRecommendedPalette();
+                        break;
+                }
+                currentMode = '';
+                imageCanvas.style.cursor = 'default';
+            }
+        });
+
+        extractHair.addEventListener('click', function() {
+            currentMode = 'hair';
+            imageCanvas.style.cursor = 'crosshair';
+        });
+
+        extractSkin.addEventListener('click', function() {
+            currentMode = 'skin';
+            imageCanvas.style.cursor = 'crosshair';
+        });
+
+        extractEye.addEventListener('click', function() {
+            currentMode = 'eye';
+            imageCanvas.style.cursor = 'crosshair';
+        });
+
+        function generateRecommendedPalette() {
+            // This is a placeholder function. In a real implementation,
+            // you would use color theory algorithms to generate a palette
+            // based on the extracted colors.
+            const palette = [];
+            for (let i = 0; i < 7; i++) {
+                const randomColor = Math.floor(Math.random()*16777215).toString(16);
+                palette.push("#" + randomColor);
+            }
+
+            const colorBoxesContainer = recommendedPalette.querySelector('.color-boxes');
+            colorBoxesContainer.innerHTML = ''; // Clear existing color boxes
+            palette.forEach(color => {
+                const colorBox = document.createElement('div');
+                colorBox.className = 'color-box';
+                colorBox.style.backgroundColor = color;
+                colorBoxesContainer.appendChild(colorBox);
+            });
+        }
+
+        document.getElementById('showRecommendedProducts').addEventListener('click', function() {
+            alert('This feature is coming soon!');
+        });
+    </script>
+</body>
+</html>
