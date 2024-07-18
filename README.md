@@ -44,8 +44,6 @@ The Myntra Color Palette Generator is an innovative tool designed to provide per
 4. Based on the analysis, the app provides personalized color recommendations.
 5. The app presents items to users in their preferred category and style, based on the colors of the personalized color palette.
 
-![Process Flow](path_to_process_flow_image.png)
-
 ## Technical Implementation
 
 ### Prerequisites
